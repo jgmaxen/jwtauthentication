@@ -1,6 +1,10 @@
 import { UserLogin } from "../interfaces/UserLogin";
 
-const login = async (userInfo: UserLogin): Promise<string | null> => {
+interface LoginResponse {
+  token: string;
+}
+
+const login = async (userInfo: UserLogin): Promise<LoginResponse | null> => {
   try {
     const response = await fetch('/api/auth/login', {
       method: 'POST',
@@ -12,10 +16,14 @@ const login = async (userInfo: UserLogin): Promise<string | null> => {
       throw new Error('Invalid username or password');
     }
 
-    const { token } = await response.json();
-    localStorage.setItem('token', token); // Store JWT in local storage
+    const data: LoginResponse = await response.json();
 
-    return token; // Return the token for further usage
+    if (!data || !data.token) {
+      throw new Error("Login failed: No token received");
+    }
+
+    localStorage.setItem('token', data.token); // Store JWT in local storage
+    return data; // Return the full object { token: string }
   } catch (error) {
     console.error('Login failed:', error);
     return null;
