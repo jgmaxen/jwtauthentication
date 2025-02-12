@@ -1,30 +1,44 @@
 import { JwtPayload, jwtDecode } from 'jwt-decode';
 
 class AuthService {
+  // ✅ Get user profile (decoded token)
   getProfile() {
-    // TODO: return the decoded token
+    const token = this.getToken();
+    return token ? jwtDecode<JwtPayload>(token) : null;
   }
 
+  // ✅ Check if user is logged in (token exists & is valid)
   loggedIn() {
-    // TODO: return a value that indicates if the user is logged in
+    const token = this.getToken();
+    return !!token && !this.isTokenExpired(token);
   }
-  
+
+  // ✅ Check if token is expired
   isTokenExpired(token: string) {
-    // TODO: return a value that indicates if the token is expired
+    try {
+      const { exp } = jwtDecode<JwtPayload>(token);
+      if (!exp) return true; // No expiration found
+      return Date.now() >= exp * 1000; // Convert exp to milliseconds
+    } catch (error) {
+      return true; // If decoding fails, assume expired
+    }
   }
 
-  getToken(): string {
-    // TODO: return the token
+  // ✅ Get the token from local storage
+  getToken(): string | null {
+    return localStorage.getItem('token');
   }
 
+  // ✅ Save token to local storage & redirect to Kanban board
   login(idToken: string) {
-    // TODO: set the token to localStorage
-    // TODO: redirect to the home page
+    localStorage.setItem('token', idToken);
+    window.location.href = "/board";
   }
 
+  // ✅ Remove token from local storage & redirect to login
   logout() {
-    // TODO: remove the token from localStorage
-    // TODO: redirect to the login page
+    localStorage.removeItem('token');
+    window.location.href = "/login";
   }
 }
 
